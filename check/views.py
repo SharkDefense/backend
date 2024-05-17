@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import URLSerializer
 from .machine_model.ml import predict
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from .utils import extract_domain
 import requests
 import networkx as nx
@@ -16,7 +16,7 @@ import re
 
 
 class CheckURLView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -27,7 +27,7 @@ class CheckURLView(APIView):
 
 
 class ScreenshotView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -63,7 +63,7 @@ class ScreenshotView(APIView):
             return ' API request failed' 
 
 class VisualizeSubdomainsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -110,7 +110,7 @@ class VisualizeSubdomainsView(APIView):
         return html    
     
 class IPReputationView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -160,7 +160,7 @@ class IPReputationView(APIView):
 
 
 class WhoisView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
