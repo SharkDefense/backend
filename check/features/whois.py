@@ -45,3 +45,6 @@ def whois(url):
     whois=whois_lookup(domain)
     return whois    
     
+url='https://www.google.com'
+whois=whois(url)
+print(whois)
