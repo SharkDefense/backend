@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import URLSerializer
 from .machine_model.ml import predict
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .utils import extract_domain
@@ -10,11 +10,9 @@ import requests
 import networkx as nx
 import pyvis.network as net
 import socket
-from bs4 import BeautifulSoup  
+from bs4 import BeautifulSoup
 from datetime import datetime
 import re
-
-
 
 
 class CheckURLView(APIView):
@@ -25,7 +23,7 @@ class CheckURLView(APIView):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
             url = serializer.validated_data['url']
-            return Response({'Classification_result': predict(url) })
+            return Response({'Classification_result': predict(url)})
         return Response(serializer.errors, status=400)
 
 
@@ -37,11 +35,10 @@ class ScreenshotView(APIView):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
             url = serializer.validated_data['url']
-            return Response({'screenshot ': self.get_screenshot(url)})  
+            return Response({'screenshot ': self.get_screenshot(url)})
         return Response(serializer.errors, status=400)
 
-    
-    def get_screenshot(self,url):
+    def get_screenshot(self, url):
 
         API_KEY = 'AIzaSyBEvMEs5sPH4ZJDIcv3fxtC1BGfHh1imnI'
         PSI_API_URL = f'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?key={API_KEY}'
@@ -59,12 +56,13 @@ class ScreenshotView(APIView):
             screenshot_data = result.get('lighthouseResult', {}).get('audits', {}).get('final-screenshot', {}).get(
                 'details', {}).get('data', None)
             if screenshot_data:
-                
+
                 return screenshot_data
             else:
                 return 'Unable to fetch screenshot data'
         else:
-            return ' API request failed' 
+            return ' API request failed'
+
 
 class VisualizeSubdomainsView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -75,10 +73,9 @@ class VisualizeSubdomainsView(APIView):
         if serializer.is_valid():
             url = serializer.validated_data['url']
             domain = extract_domain(url)
-            subdomains = self.get_subdomains(domain) 
-            return Response({'Graph visualization ': self.generate_graph(domain,subdomains)})
+            subdomains = self.get_subdomains(domain)
+            return Response({'Graph visualization ': self.generate_graph(domain, subdomains)})
         return Response(serializer.errors, status=400)
-
 
     def get_subdomains(self, domain):
         api_key = 'j92HQnvQF5mSqDgfkRQ8L2kCTGM9DsG_'
@@ -91,11 +88,11 @@ class VisualizeSubdomainsView(APIView):
             subdomains = response.json().get('subdomains', [])
             return subdomains
         else:
-            print(f"Failed to fetch subdomains. Status code: {response.status_code}")
+            print(
+                f"Failed to fetch subdomains. Status code: {response.status_code}")
             return []
 
-
-    def generate_graph(self,domain,subdomains):
+    def generate_graph(self, domain, subdomains):
         # Initialize a directed graph
         graph = nx.DiGraph()
 
@@ -108,12 +105,14 @@ class VisualizeSubdomainsView(APIView):
             graph.add_edge(domain, subdomain)
 
         # Create the graph visualization
-        pyvis_graph = net.Network(height="500px", width="100%", directed=True, notebook=False)
+        pyvis_graph = net.Network(
+            height="500px", width="100%", directed=True, notebook=False)
         pyvis_graph.from_nx(graph)
         pyvis_graph.show_buttons(filter_=['nodes'])
         html = pyvis_graph.generate_html()
-        return html    
-    
+        return html
+
+
 class IPReputationView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -123,22 +122,20 @@ class IPReputationView(APIView):
         if serializer.is_valid():
             url = serializer.validated_data['url']
             domain = extract_domain(url)
-            ip_address=self.get_ip_address(domain)
-            
+            ip_address = self.get_ip_address(domain)
+
             return Response({'IP Reputation': self.check_ip_reputation(ip_address)})
         return Response(serializer.errors, status=400)
 
-
-
-    def get_ip_address(self,domain):  
+    def get_ip_address(self, domain):
         try:
             ip_address = socket.gethostbyname(domain)
             return ip_address
         except socket.gaierror as e:
             print(f"Error occurred while resolving IP address: {e}")
             return None
-        
-    def check_ip_reputation(self,ip_address):
+
+    def check_ip_reputation(self, ip_address):
 
         try:
             url = 'https://api.abuseipdb.com/api/v2/check'
@@ -153,21 +150,24 @@ class IPReputationView(APIView):
                 'Key': 'a5481805b7182022b010b471c60bb48cd291e931c3e26964404177a4c6092818f502983f3a14d1a0'
             }
 
-            response = requests.request(method='GET', url=url, headers=headers, params=querystring)
+            response = requests.request(
+                method='GET', url=url, headers=headers, params=querystring)
 
             if response.status_code == 200:
-                    return response
-                
+                return response
+
             else:
-                print(f"Error occurred while retrieving reputation information. Status code: {response.status_code}")
+                print(
+                    f"Error occurred while retrieving reputation information. Status code: {response.status_code}")
 
         except requests.exceptions.RequestException as e:
-            print(f"Error occurred while retrieving reputation information: {e}")   
+            print(
+                f"Error occurred while retrieving reputation information: {e}")
 
 
 class WhoisView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]  
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -177,8 +177,7 @@ class WhoisView(APIView):
             return Response({'Whois info': self.whois_lookup(domain)})
         return Response(serializer.errors, status=400)
 
-    
-    def whois_lookup(self,domain):
+    def whois_lookup(self, domain):
         # URL for WHOIS lookup
         whois_url = f"https://www.whois.com/whois/{domain}"
 
@@ -186,7 +185,7 @@ class WhoisView(APIView):
         response = requests.get(whois_url)
 
         if response.status_code == 200:
-        # Parsing HTML content
+            # Parsing HTML content
             soup = BeautifulSoup(response.content, 'html.parser')
 
         # Finding WHOIS data
@@ -205,12 +204,3 @@ class WhoisView(APIView):
         else:
             print(f"Failed to retrieve WHOIS data for {domain}")
             return None
-
-
-    
-
-
-
-
-    
-

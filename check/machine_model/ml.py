@@ -1,29 +1,29 @@
+from .feature import FeatureExtraction
 import numpy as np
 import pandas as pd
-from sklearn import metrics 
-import warnings, joblib
+from sklearn import metrics
+import warnings
+import joblib
 warnings.filterwarnings('ignore')
-from .feature import FeatureExtraction
 
 
 def load_model():
     try:
-        gbc = joblib.load("K:\django projects\DPA\DPA\check\machine_model\model.pkl")
+        gbc = joblib.load(
+            "K:\django projects\DPA\DPA\check\machine_model\model.pkl")
         print("Model loaded successfully.")
     except FileNotFoundError:
         print("The original model file was not found.")
         gbc = None  # تعيين gbc إلى None لمنع الأخطاء إذا حاولت استخدامه في تنبؤ
     except Exception as e:
         print(f"An error occurred: {e}")
-        gbc=None
+        gbc = None
 
     return gbc
 
 
-
-
 def predict(url):
-    gbc=load_model()
+    gbc = load_model()
     if gbc:
         obj = FeatureExtraction(url)
         x = np.array(obj.getFeaturesList()).reshape(1, 30)
@@ -40,4 +40,3 @@ def predict(url):
         }
     else:
         return {'message': 'Model not loaded.'}
-

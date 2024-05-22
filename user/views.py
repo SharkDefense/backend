@@ -64,7 +64,6 @@ def send_welcome_email(user):
 class UpdateUser(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    
 
     def put(self, request):
         id = request.user.id
