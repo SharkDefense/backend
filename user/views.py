@@ -3,10 +3,10 @@ from .serialiazers import UserSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import status
+from .models import User
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -41,7 +41,7 @@ def send_welcome_email(user):
     context = {'user': user}
     subject = 'Welcome to SharkDefense!'
     message = """
-    Hi {user.full_name},
+    Hi {user.name},
     
     Welcome aboard SharkDefense! We're excited to have you join our community dedicated to keeping your online experience safe and secure.
 
@@ -64,6 +64,7 @@ def send_welcome_email(user):
 class UpdateUser(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    
 
     def put(self, request):
         id = request.user.id
