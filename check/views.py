@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from .serializers import URLSerializer
 from .machine_model.ml import predict
 from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from .utils import extract_domain
 import requests
 import networkx as nx
@@ -16,7 +18,8 @@ import re
 
 
 class CheckURLView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -27,7 +30,8 @@ class CheckURLView(APIView):
 
 
 class ScreenshotView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -63,7 +67,8 @@ class ScreenshotView(APIView):
             return ' API request failed' 
 
 class VisualizeSubdomainsView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -110,7 +115,8 @@ class VisualizeSubdomainsView(APIView):
         return html    
     
 class IPReputationView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -160,7 +166,9 @@ class IPReputationView(APIView):
 
 
 class WhoisView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]  
+
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
@@ -197,6 +205,11 @@ class WhoisView(APIView):
         else:
             print(f"Failed to retrieve WHOIS data for {domain}")
             return None
+
+
+    
+
+
 
 
     
