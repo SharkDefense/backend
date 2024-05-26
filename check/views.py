@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import URLSerializer
+from .models import MaliciousDomain
 from .machine_model.ml import predict
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -25,6 +26,10 @@ class CheckURLView(APIView):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
             url = serializer.validated_data['url']
+            domain=extract_domain(url)
+            print('domain')
+            if MaliciousDomain.objects.filter(domain=domain).exists():
+                return Response({'Classification_result': 'malicious found in our dataset' })
             return Response({'Classification_result': predict(url) })
         return Response(serializer.errors, status=400)
 
