@@ -14,6 +14,8 @@ import socket
 from bs4 import BeautifulSoup  
 from datetime import datetime
 import re
+import time
+
 
 
 
@@ -27,11 +29,35 @@ class CheckURLView(APIView):
         if serializer.is_valid():
             url = serializer.validated_data['url']
             domain=extract_domain(url)
+            is_virustotal_malicious = self.scan_with_virustotal(url)
             if MaliciousDomain.objects.filter(domain=domain).exists():
                 return Response({'Classification_result': 'malicious found in our dataset' })
+            elif is_virustotal_malicious:
+                return Response({'Classification_result': 'malicious from virustotal' })
+
             return Response({'Classification_result': predict(url) })
         return Response(serializer.errors, status=400)
 
+
+    def scan_with_virustotal(url):
+        VIRUSTOTAL_API_KEY = '6721398630d0d3deca1d1516fc3a56428f8eea1425386eeb90fd4a9ffe9dcb6b'
+        headers = {
+            "x-apikey": VIRUSTOTAL_API_KEY
+        }
+        params = {
+            'url': url
+        }
+        response = requests.post('https://www.virustotal.com/api/v3/urls', headers=headers, data=params)
+        analysis_id = response.json()['data']['id']
+        analysis_url = f'https://www.virustotal.com/api/v3/analyses/{analysis_id}'
+        
+        time.sleep(10)
+        analysis_response = requests.get(analysis_url, headers=headers)
+        if 'data' in analysis_response.json() and 'attributes' in analysis_response.json()['data']:
+            stats = analysis_response.json()['data']['attributes']['stats']
+            malicious = stats['malicious'] if 'malicious' in stats else 0
+            return malicious > 0
+        return False
 
 class ScreenshotView(APIView):
     authentication_classes = [JWTAuthentication]
