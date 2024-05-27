@@ -27,7 +27,6 @@ class CheckURLView(APIView):
         if serializer.is_valid():
             url = serializer.validated_data['url']
             domain=extract_domain(url)
-            print('domain')
             if MaliciousDomain.objects.filter(domain=domain).exists():
                 return Response({'Classification_result': 'malicious found in our dataset' })
             return Response({'Classification_result': predict(url) })
@@ -161,7 +160,8 @@ class IPReputationView(APIView):
             response = requests.request(method='GET', url=url, headers=headers, params=querystring)
 
             if response.status_code == 200:
-                    return response
+                result = response.json().get('data', {})
+                return result
                 
             else:
                 print(f"Error occurred while retrieving reputation information. Status code: {response.status_code}")
