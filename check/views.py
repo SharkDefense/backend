@@ -193,23 +193,51 @@ class WhoisView(APIView):
         if response.status_code == 200:
         # Parsing HTML content
             soup = BeautifulSoup(response.content, 'html.parser')
+             # Finding WHOIS data
+            try:
+                whois_data = soup.find(class_="df-block")
+            except Exception as e:
+                print(f"Error: {e}")
+                return 'invalid domain' 
 
-        # Finding WHOIS data
-            whois_data = soup.find("pre", class_="df-raw").text
+            domain=whois_data.contents[1].find(class_="df-value").text
+            registrar=whois_data.contents[2].find(class_="df-value").text
+            registered_on=whois_data.contents[3].find(class_="df-value").text
+            expires_on=whois_data.contents[4].find(class_="df-value").text
+            updated_on=whois_data.contents[5].find(class_="df-value").text
+            status=whois_data.contents[6].find(class_="df-value").get_text(separator="\n").split('\n')
+            try:
+                name_servers=whois_data.contents[7].find(class_="df-value").get_text(separator="\n").split('\n') 
+            except:
+                name_servers=None
 
-        # Extracting creation date, expiry date
-            creation_date = re.search(r"Creation Date: (.+)", whois_data)
-            expiry_date = re.search(r"Registry Expiry Date: (.+)", whois_data)
             result = {}
-            if creation_date:
-                result["creation_date"] = creation_date.group(1)
-            if expiry_date:
-                result["expiration_date"] = expiry_date.group(1)
+            if domain:
+                result["Domain name"] = domain
 
-            return result
+            if registrar:
+                result["Registrar"] = registrar
+
+            if registered_on:
+                result["Creation Date"] = registered_on
+            if expires_on:
+                result["Expiry Date"] = expires_on
+            if updated_on:
+                result["Updated on"] = updated_on
+            if status:
+                result["Status"] = status
+
+            if name_servers:
+                result["Name Servers"] = name_servers
+
+            return result    
+    
         else:
             print(f"Failed to retrieve WHOIS data for {domain}")
-            return None
+            return None 
+    
+
+       
 
 
     
