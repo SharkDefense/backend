@@ -39,7 +39,7 @@ class CheckURLView(APIView):
         return Response(serializer.errors, status=400)
 
 
-    def scan_with_virustotal(url):
+    def scan_with_virustotal(self,url):
         VIRUSTOTAL_API_KEY = '6721398630d0d3deca1d1516fc3a56428f8eea1425386eeb90fd4a9ffe9dcb6b'
         headers = {
             "x-apikey": VIRUSTOTAL_API_KEY
