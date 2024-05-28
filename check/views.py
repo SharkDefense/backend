@@ -5,16 +5,18 @@ from .models import MaliciousDomain
 from .machine_model.ml import predict
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from .utils import extract_domain
 import requests
 import networkx as nx
 import pyvis.network as net
 import socket
 from bs4 import BeautifulSoup  
-from datetime import datetime
-import re
 import time
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 
@@ -40,7 +42,8 @@ class CheckURLView(APIView):
 
 
     def scan_with_virustotal(self,url):
-        VIRUSTOTAL_API_KEY = '6721398630d0d3deca1d1516fc3a56428f8eea1425386eeb90fd4a9ffe9dcb6b'
+        VIRUSTOTAL_API_KEY =os.environ.get("VIRUSTOTAL_API_KEY")
+
         headers = {
             "x-apikey": VIRUSTOTAL_API_KEY
         }
@@ -73,8 +76,8 @@ class ScreenshotView(APIView):
     
     def get_screenshot(self,url):
 
-        API_KEY = 'AIzaSyBEvMEs5sPH4ZJDIcv3fxtC1BGfHh1imnI'
-        PSI_API_URL = f'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?key={API_KEY}'
+        GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+        PSI_API_URL = f'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?key={GOOGLE_API_KEY}'
 
         params = {
             'url': url,
@@ -111,9 +114,9 @@ class VisualizeSubdomainsView(APIView):
 
 
     def get_subdomains(self, domain):
-        api_key = 'j92HQnvQF5mSqDgfkRQ8L2kCTGM9DsG_'
+        subdomain_api_key =os.environ.get("subdomain_api_key")
         api_url = f'https://api.securitytrails.com/v1/domain/{domain}/subdomains'
-        headers = {'APIKEY': api_key}
+        headers = {'APIKEY': subdomain_api_key}
 
         response = requests.get(api_url, headers=headers)
 
@@ -169,7 +172,7 @@ class IPReputationView(APIView):
             return None
         
     def check_ip_reputation(self,ip_address):
-
+        abusedb_api_key= os.environ.get("abusedb_api_key")
         try:
             url = 'https://api.abuseipdb.com/api/v2/check'
 
@@ -180,7 +183,7 @@ class IPReputationView(APIView):
 
             headers = {
                 'Accept': 'application/json',
-                'Key': 'a5481805b7182022b010b471c60bb48cd291e931c3e26964404177a4c6092818f502983f3a14d1a0'
+                'Key': abusedb_api_key
             }
 
             response = requests.request(method='GET', url=url, headers=headers, params=querystring)
