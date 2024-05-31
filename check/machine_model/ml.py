@@ -4,11 +4,12 @@ from sklearn import metrics
 import warnings, joblib
 warnings.filterwarnings('ignore')
 from .feature import FeatureExtraction
+import os
 
 
 def load_model():
     try:
-        gbc = joblib.load("K:\django projects\DPA\DPA\check\machine_model\model.pkl")
+        gbc = joblib.load(os.environ.get("Model_path")) 
         print("Model loaded successfully.")
     except FileNotFoundError:
         print("The original model file was not found.")
