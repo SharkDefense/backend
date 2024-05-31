@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 
 DEBUG = True
-
+CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = ['*']
 
 # Application definition
