@@ -21,7 +21,7 @@ class SignUp(APIView):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        send_welcome_email(user)
+        # send_welcome_email(user)
 
         # Send welcome email
 
@@ -34,6 +34,30 @@ class SignUp(APIView):
                     'access': str(tokens.access_token), 'refresh': str(tokens)
                 }
             }, status.HTTP_201_CREATED
+        )
+    
+class Login(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({'message': 'User not found'}, status.HTTP_404_NOT_FOUND)
+        if not user.check_password(password):
+            return Response({'message': 'Invalid credentials'}, status.HTTP_400_BAD_REQUEST)
+
+        tokens = TokenObtainPairSerializer().get_token(user)
+
+        return Response(
+            {
+                'message': 'success', 'user': UserSerializer(user).data,
+                'tokens': {
+                    'access': str(tokens.access_token), 'refresh': str(tokens)
+                }
+            }, status.HTTP_200_OK
         )
 
 
@@ -96,23 +120,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+# class CustomTokenObtainPairView(TokenObtainPairView):
+#     serializer_class = CustomTokenObtainPairSerializer
 
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        user = response.data
-        tokens = response.data
-        data = {
-            'message': 'success',
-            'user': {
-                'id': user['id'],
-                'email': user['email'],
-                'name': user['name']
-            },
-            'tokens': {
-                'access': tokens['access'],
-                'refresh': tokens['refresh']
-            }
-        }
-        return Response(data, status.HTTP_200_OK)
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.save()
+#         # tokens = serializer.validated_data
+#         tokens = TokenObtainPairSerializer().get_token(user)
+
+
+#         data = {
+#             'message': 'success',
+#             'user': serializer.data['user'],
+#             'tokens': {
+#                 'access': tokens['access'],
+#                 'refresh': tokens['refresh']
+#             }
+#         }
+#         return Response(data, status.HTTP_200_OK)
