@@ -30,15 +30,10 @@ def predict(url):
         x = np.array(obj.getFeaturesList()).reshape(1, 30)
 
         y_pred = gbc.predict(x)[0]
-        y_pro_phishing = gbc.predict_proba(x)[0, 0]
-        y_pro_non_phishing = gbc.predict_proba(x)[0, 1]
 
-        prediction_message = "It is safe" if y_pred == 1 else "It is not safe"
-        return {
-            'prediction': prediction_message,
-            'phishing_probability': y_pro_phishing * 100,
-            'non_phishing_probability': y_pro_non_phishing * 100,
-        }
+        prediction_message = "It is safe" if y_pred == 1 else "malicious from model"
+        return  prediction_message
+        
     else:
         return {'message': 'Model not loaded.'}
 
