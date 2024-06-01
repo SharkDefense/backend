@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import URLSerializer
-from .models import MaliciousDomain
+from .models import MaliciousDomain,TestedURL
 from .machine_model.ml import predict
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -32,14 +32,31 @@ class CheckURLView(APIView):
             url = serializer.validated_data['url']
             domain=extract_domain(url)
             is_virustotal_malicious = self.scan_with_virustotal(url)
-            if MaliciousDomain.objects.filter(domain=domain).exists():
-                return Response({'Classification_result': 'malicious found in our dataset' })
-            elif is_virustotal_malicious:
-                return Response({'Classification_result': 'malicious from virustotal' })
+            test=self.check(url,domain,is_virustotal_malicious)
 
-            return Response({'Classification_result': predict(url) })
+              # Save the tested URL to the database
+            tested_url, created = TestedURL.objects.get_or_create(
+            url=url,
+            defaults={ 'state': test, 'count': 1}
+                                 )
+        
+            if not created:
+                tested_url.count += 1
+                tested_url.state=test
+                tested_url.save()
+
+            return Response({'Classification_result': test })
+            
         return Response(serializer.errors, status=400)
 
+    def check(self,url,domain,is_virustotal_malicious):
+        if MaliciousDomain.objects.filter(domain=domain).exists():
+            return  'malicious found in our dataset' 
+        if is_virustotal_malicious:
+            return 'malicious from virustotal'
+        test=predict(url)
+        return test
+    
 
     def scan_with_virustotal(self,url):
         VIRUSTOTAL_API_KEY =os.environ.get("VIRUSTOTAL_API_KEY")
