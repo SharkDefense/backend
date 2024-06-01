@@ -87,7 +87,7 @@ class ScreenshotView(APIView):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
             url = serializer.validated_data['url']
-            return Response({'screenshot ': self.get_screenshot(url)})  
+            return Response({'screenshot': self.get_screenshot(url)})  
         return Response(serializer.errors, status=400)
 
     
@@ -126,7 +126,7 @@ class VisualizeSubdomainsView(APIView):
             url = serializer.validated_data['url']
             domain = extract_domain(url)
             subdomains = self.get_subdomains(domain) 
-            return Response({'Graph visualization ': self.generate_graph(domain,subdomains)})
+            return Response({'Graph_visualization ': self.generate_graph(domain,subdomains)})
         return Response(serializer.errors, status=400)
 
 
@@ -175,7 +175,7 @@ class IPReputationView(APIView):
             domain = extract_domain(url)
             ip_address=self.get_ip_address(domain)
             
-            return Response({'IP Reputation': self.check_ip_reputation(ip_address)})
+            return Response({'IP_Reputation': self.check_ip_reputation(ip_address)})
         return Response(serializer.errors, status=400)
 
 
@@ -225,7 +225,7 @@ class WhoisView(APIView):
         if serializer.is_valid():
             url = serializer.validated_data['url']
             domain = extract_domain(url)
-            return Response({'Whois info': self.whois_lookup(domain)})
+            return Response({'Whois_info': self.whois_lookup(domain)})
         return Response(serializer.errors, status=400)
 
     
