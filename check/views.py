@@ -3,8 +3,6 @@ from rest_framework.response import Response
 from .serializers import URLSerializer
 from .models import MaliciousDomain,TestedURL
 from .machine_model.ml import predict
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from .utils import extract_domain
 import requests
 import networkx as nx
@@ -23,8 +21,6 @@ load_dotenv()
 
 
 class CheckURLView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -80,8 +76,6 @@ class CheckURLView(APIView):
         return False
 
 class ScreenshotView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -117,8 +111,6 @@ class ScreenshotView(APIView):
             return ' API request failed' 
 
 class VisualizeSubdomainsView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -165,8 +157,6 @@ class VisualizeSubdomainsView(APIView):
         return html    
     
 class IPReputationView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -216,9 +206,7 @@ class IPReputationView(APIView):
             print(f"Error occurred while retrieving reputation information: {e}")   
 
 
-class WhoisView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]  
+class WhoisView(APIView): 
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
