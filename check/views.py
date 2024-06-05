@@ -20,7 +20,6 @@ load_dotenv()
 
 
 
-
 class CheckURLView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -48,15 +47,12 @@ class CheckURLView(APIView):
     def check(self,url):
 
         domain = extract_domain(url)
-        print(f"Extracted domain: {domain}")
         
         if MaliciousDomain.objects.filter(domain=domain).exists():
-            print("Found in local dataset")
             return 'malicious found in our dataset'
         is_virustotal_malicious = self.scan_with_virustotal(url)
         print(f"VirusTotal scan result: {is_virustotal_malicious}")
         if is_virustotal_malicious:
-            print("Found malicious by VirusTotal")
             return 'malicious from virustotal'
         
         prediction = predict(url)
@@ -76,16 +72,29 @@ class CheckURLView(APIView):
         params = {
             'url': url
         }
-        response = requests.post('https://www.virustotal.com/api/v3/urls', headers=headers, data=params)
-        analysis_id = response.json()['data']['id']
-        analysis_url = f'https://www.virustotal.com/api/v3/analyses/{analysis_id}'
 
-        analysis_response = requests.get(analysis_url, headers=headers)
-        if 'data' in analysis_response.json() and 'attributes' in analysis_response.json()['data']:
-            stats = analysis_response.json()['data']['attributes']['stats']
-            malicious = stats['malicious'] if 'malicious' in stats else 0
-            return malicious > 0
-        return False            
+        max_retries = 2
+        retry_delay = 10  # Delay in seconds between retries
+
+        for retry_count in range(max_retries):
+            response = requests.post('https://www.virustotal.com/api/v3/urls', headers=headers, data=params)
+            analysis_id = response.json()['data']['id']
+            analysis_url = f'https://www.virustotal.com/api/v3/analyses/{analysis_id}'
+
+            analysis_response = requests.get(analysis_url, headers=headers)
+            if 'data' in analysis_response.json() and 'attributes' in analysis_response.json()['data']:
+                stats = analysis_response.json()['data']['attributes']['stats']
+                malicious = stats['malicious'] if 'malicious' in stats else 0
+                
+
+            # If the analysis is not ready, wait and retry
+            print(f"VirusTotal scan retry {retry_count + 1}/{max_retries} {malicious}")
+            if malicious:
+                return malicious
+            time.sleep(retry_delay)
+        return malicious 
+    
+              
 
 class ScreenshotView(APIView):
     permission_classes = [AllowAny]
@@ -282,14 +291,3 @@ class WhoisView(APIView):
             print(f"Failed to retrieve WHOIS data for {domain}")
             return None 
     
-
-       
-
-
-    
-
-
-
-
-    
-
