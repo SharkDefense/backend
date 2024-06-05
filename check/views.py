@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from .serializers import URLSerializer
 from .models import MaliciousDomain,TestedURL
 from .machine_model.ml import predict
@@ -21,14 +22,12 @@ load_dotenv()
 
 
 class CheckURLView(APIView):
-
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
             url = serializer.validated_data['url']
-            domain=extract_domain(url)
-            is_virustotal_malicious = self.scan_with_virustotal(url)
-            test=self.check(url,domain,is_virustotal_malicious)
+            test=self.check(url)
 
               # Save the tested URL to the database
             tested_url, created = TestedURL.objects.get_or_create(
@@ -41,17 +40,30 @@ class CheckURLView(APIView):
                 tested_url.state=test
                 tested_url.save()
 
+          
             return Response({'Classification_result': test })
             
         return Response(serializer.errors, status=400)
 
-    def check(self,url,domain,is_virustotal_malicious):
+    def check(self,url):
+
+        domain = extract_domain(url)
+        print(f"Extracted domain: {domain}")
+        
         if MaliciousDomain.objects.filter(domain=domain).exists():
-            return  'malicious found in our dataset' 
+            print("Found in local dataset")
+            return 'malicious found in our dataset'
+        is_virustotal_malicious = self.scan_with_virustotal(url)
+        print(f"VirusTotal scan result: {is_virustotal_malicious}")
         if is_virustotal_malicious:
+            print("Found malicious by VirusTotal")
             return 'malicious from virustotal'
-        test=predict(url)
-        return test
+        
+        prediction = predict(url)
+        print(f"Prediction result: {prediction}")
+        return prediction
+
+
     
 
     def scan_with_virustotal(self,url):
@@ -60,23 +72,23 @@ class CheckURLView(APIView):
         headers = {
             "x-apikey": VIRUSTOTAL_API_KEY
         }
+
         params = {
             'url': url
         }
         response = requests.post('https://www.virustotal.com/api/v3/urls', headers=headers, data=params)
         analysis_id = response.json()['data']['id']
         analysis_url = f'https://www.virustotal.com/api/v3/analyses/{analysis_id}'
-        
-        time.sleep(10)
+
         analysis_response = requests.get(analysis_url, headers=headers)
         if 'data' in analysis_response.json() and 'attributes' in analysis_response.json()['data']:
             stats = analysis_response.json()['data']['attributes']['stats']
             malicious = stats['malicious'] if 'malicious' in stats else 0
             return malicious > 0
-        return False
+        return False            
 
 class ScreenshotView(APIView):
-
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
@@ -111,14 +123,14 @@ class ScreenshotView(APIView):
             return ' API request failed' 
 
 class VisualizeSubdomainsView(APIView):
-
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
             url = serializer.validated_data['url']
             domain = extract_domain(url)
             subdomains = self.get_subdomains(domain) 
-            return Response({'Graph_visualization ': self.generate_graph(domain,subdomains)})
+            return Response({'Graph_visualization': self.generate_graph(domain,subdomains)})
         return Response(serializer.errors, status=400)
 
 
@@ -157,7 +169,7 @@ class VisualizeSubdomainsView(APIView):
         return html    
     
 class IPReputationView(APIView):
-
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
@@ -207,7 +219,7 @@ class IPReputationView(APIView):
 
 
 class WhoisView(APIView): 
-
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
@@ -247,22 +259,22 @@ class WhoisView(APIView):
 
             result = {}
             if domain:
-                result["Domain name"] = domain
+                result["Domain_name"] = domain
 
             if registrar:
                 result["Registrar"] = registrar
 
             if registered_on:
-                result["Creation Date"] = registered_on
+                result["Creation_Date"] = registered_on
             if expires_on:
-                result["Expiry Date"] = expires_on
+                result["Expiry_Date"] = expires_on
             if updated_on:
-                result["Updated on"] = updated_on
+                result["Updated_on"] = updated_on
             if status:
                 result["Status"] = status
 
             if name_servers:
-                result["Name Servers"] = name_servers
+                result["Name_Servers"] = name_servers
 
             return result    
     
