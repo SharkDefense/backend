@@ -10,12 +10,9 @@ import networkx as nx
 import pyvis.network as net
 import socket
 from bs4 import BeautifulSoup  
-import time
 
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
 
 
 
@@ -50,49 +47,12 @@ class CheckURLView(APIView):
         
         if MaliciousDomain.objects.filter(domain=domain).exists():
             return 'malicious found in our dataset'
-        is_virustotal_malicious = self.scan_with_virustotal(url)
-        print(f"VirusTotal scan result: {is_virustotal_malicious}")
-        if is_virustotal_malicious:
-            return 'malicious from virustotal'
         
         prediction = predict(url)
         print(f"Prediction result: {prediction}")
         return prediction
 
 
-    
-
-    def scan_with_virustotal(self,url):
-        VIRUSTOTAL_API_KEY =os.environ.get("VIRUSTOTAL_API_KEY")
-
-        headers = {
-            "x-apikey": VIRUSTOTAL_API_KEY
-        }
-
-        params = {
-            'url': url
-        }
-
-        max_retries = 2
-        retry_delay = 10  # Delay in seconds between retries
-
-        for retry_count in range(max_retries):
-            response = requests.post('https://www.virustotal.com/api/v3/urls', headers=headers, data=params)
-            analysis_id = response.json()['data']['id']
-            analysis_url = f'https://www.virustotal.com/api/v3/analyses/{analysis_id}'
-
-            analysis_response = requests.get(analysis_url, headers=headers)
-            if 'data' in analysis_response.json() and 'attributes' in analysis_response.json()['data']:
-                stats = analysis_response.json()['data']['attributes']['stats']
-                malicious = stats['malicious'] if 'malicious' in stats else 0
-                
-
-            # If the analysis is not ready, wait and retry
-            print(f"VirusTotal scan retry {retry_count + 1}/{max_retries} {malicious}")
-            if malicious:
-                return malicious
-            time.sleep(retry_delay)
-        return malicious 
     
               
 
