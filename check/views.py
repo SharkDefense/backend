@@ -214,13 +214,36 @@ class WhoisView(APIView):
             except Exception as e:
                 print(f"Error: {e}")
                 return 'invalid domain' 
-
-            domain=whois_data.contents[1].find(class_="df-value").text
-            registrar=whois_data.contents[2].find(class_="df-value").text
-            registered_on=whois_data.contents[3].find(class_="df-value").text
-            expires_on=whois_data.contents[4].find(class_="df-value").text
-            updated_on=whois_data.contents[5].find(class_="df-value").text
-            status=whois_data.contents[6].find(class_="df-value").get_text(separator="\n").split('\n')
+            try:
+                domain=whois_data.contents[1].find(class_="df-value").text
+            except Exception as e:
+                print(f"Error: {e}")
+                domain=None   
+            try:
+                registrar=whois_data.contents[2].find(class_="df-value").text
+            except Exception as e:
+                print(f"Error: {e}")
+                registrar=None   
+            try:      
+                registered_on=whois_data.contents[3].find(class_="df-value").text
+            except Exception as e:
+                print(f"Error: {e}")
+                registered_on=None
+            try:    
+                expires_on=whois_data.contents[4].find(class_="df-value").text
+            except Exception as e:
+                print(f"Error: {e}")
+                expires_on=None  
+            try:      
+                updated_on=whois_data.contents[5].find(class_="df-value").text
+            except Exception as e:
+                print(f"Error: {e}")
+                updated_on=None 
+            try:       
+                status=whois_data.contents[6].find(class_="df-value").get_text(separator="\n").split('\n')
+            except Exception as e:
+                print(f"Error: {e}")
+                status=None     
             try:
                 name_servers=whois_data.contents[7].find(class_="df-value").get_text(separator="\n").split('\n') 
             except:
