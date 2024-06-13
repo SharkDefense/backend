@@ -19,7 +19,11 @@ class SignUp(APIView):
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response({
+                'message': 'user with this email already exists',
+                'user': "null"
+            }, status.HTTP_400_BAD_REQUEST)
         user = serializer.save()
         # send_welcome_email(user)
 
@@ -119,24 +123,3 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['name'] = self.user.name
         return data
 
-
-# class CustomTokenObtainPairView(TokenObtainPairView):
-#     serializer_class = CustomTokenObtainPairSerializer
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.save()
-#         # tokens = serializer.validated_data
-#         tokens = TokenObtainPairSerializer().get_token(user)
-
-
-#         data = {
-#             'message': 'success',
-#             'user': serializer.data['user'],
-#             'tokens': {
-#                 'access': tokens['access'],
-#                 'refresh': tokens['refresh']
-#             }
-#         }
-#         return Response(data, status.HTTP_200_OK)
