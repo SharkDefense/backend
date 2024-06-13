@@ -10,15 +10,17 @@ import networkx as nx
 import pyvis.network as net
 import socket
 from bs4 import BeautifulSoup  
-
 import os
 
+from dotenv import load_dotenv
 
+load_dotenv()
 
 
 
 class CheckURLView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
@@ -58,6 +60,7 @@ class CheckURLView(APIView):
 
 class ScreenshotView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
@@ -93,6 +96,7 @@ class ScreenshotView(APIView):
 
 class VisualizeSubdomainsView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
@@ -104,6 +108,7 @@ class VisualizeSubdomainsView(APIView):
 
 
     def get_subdomains(self, domain):
+        
         subdomain_api_key =os.environ.get("subdomain_api_key")
         api_url = f'https://api.securitytrails.com/v1/domain/{domain}/subdomains'
         headers = {'APIKEY': subdomain_api_key}
@@ -139,6 +144,7 @@ class VisualizeSubdomainsView(APIView):
     
 class IPReputationView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
@@ -189,6 +195,7 @@ class IPReputationView(APIView):
 
 class WhoisView(APIView): 
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = URLSerializer(data=request.data)
         if serializer.is_valid():
