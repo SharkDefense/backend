@@ -23,10 +23,10 @@ class SignUp(APIView):
             return Response({
                 'message': 'user with this email already exists',
                 'user': "null"
-            }, status.HTTP_400_BAD_REQUEST)
+            }, status.HTTP_200_OK)
         user = serializer.save()
-        # send_welcome_email(user)
 
+        # send_welcome_email(user)
         # Send welcome email
 
         tokens = TokenObtainPairSerializer().get_token(user)
@@ -122,4 +122,5 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['email'] = self.user.email
         data['name'] = self.user.name
         return data
+    
 
