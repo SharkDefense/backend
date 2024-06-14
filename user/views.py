@@ -49,9 +49,9 @@ class Login(APIView):
 
         user = User.objects.filter(email=email).first()
         if not user:
-            return Response({'message': 'User not found'}, status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'User not found'}, status.HTTP_200_OK)
         if not user.check_password(password):
-            return Response({'message': 'Invalid credentials'}, status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Invalid credentials'}, status.HTTP_200_OK)
 
         tokens = TokenObtainPairSerializer().get_token(user)
 
