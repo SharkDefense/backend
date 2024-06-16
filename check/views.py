@@ -87,7 +87,7 @@ class ScreenshotView(APIView):
             screenshot_data = result.get('lighthouseResult', {}).get('audits', {}).get('final-screenshot', {}).get(
                 'details', {}).get('data', None)
             if screenshot_data:
-                
+                screenshot_data=screenshot_data.split(',')[1]
                 return screenshot_data
             else:
                 return 'Unable to fetch screenshot data'
