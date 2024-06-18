@@ -114,7 +114,7 @@ class VisualizeSubdomainsView(APIView):
 
     def get_subdomains(self, domain):
         
-        subdomain_api_key =os.environ.get("sub_api_key")
+        subdomain_api_key =os.environ.get("subdomain_api_key")
         api_url = f"https://www.virustotal.com/api/v3/domains/{domain}/subdomains"
         headers = {"x-apikey": subdomain_api_key}
 
