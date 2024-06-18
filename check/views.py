@@ -11,8 +11,13 @@ import pyvis.network as net
 import socket
 from bs4 import BeautifulSoup  
 import os
-
+from PIL import Image
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
 from dotenv import load_dotenv
+import io
+
 
 load_dotenv()
 
@@ -109,21 +114,22 @@ class VisualizeSubdomainsView(APIView):
 
     def get_subdomains(self, domain):
         
-        subdomain_api_key =os.environ.get("subdomain_api_key")
-        api_url = f'https://api.securitytrails.com/v1/domain/{domain}/subdomains'
-        headers = {'APIKEY': subdomain_api_key}
+        subdomain_api_key =os.environ.get("sub_api_key")
+        api_url = f"https://www.virustotal.com/api/v3/domains/{domain}/subdomains"
+        headers = {"x-apikey": subdomain_api_key}
 
         response = requests.get(api_url, headers=headers)
 
         if response.status_code == 200:
-            subdomains = response.json().get('subdomains', [])
-            return subdomains
+            data = response.json()
+            return [subdomain['id'] for subdomain in data['data']]
         else:
             print(f"Failed to fetch subdomains. Status code: {response.status_code}")
             return []
 
 
-    def generate_graph(self,domain,subdomains):
+   
+    def generate_graph(self,domain, subdomains):
         # Initialize a directed graph
         graph = nx.DiGraph()
 
@@ -136,11 +142,21 @@ class VisualizeSubdomainsView(APIView):
             graph.add_edge(domain, subdomain)
 
         # Create the graph visualization
-        pyvis_graph = net.Network(height="500px", width="100%", directed=True, notebook=False)
-        pyvis_graph.from_nx(graph)
-        pyvis_graph.show_buttons(filter_=['nodes'])
-        html = pyvis_graph.generate_html()
-        return html    
+        plt.figure(figsize=(10, 8))
+        pos = nx.spring_layout(graph)
+        nx.draw_networkx_nodes(graph, pos)
+        nx.draw_networkx_edges(graph, pos)
+        nx.draw_networkx_labels(graph, pos)
+
+        # Save the graph as a BytesIO object
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+
+        # Convert the image to a base64-encoded string
+        graph_image = base64.b64encode(buf.getvalue()).decode('utf-8')
+
+        return graph_image    
     
 class IPReputationView(APIView):
     permission_classes = [AllowAny]
