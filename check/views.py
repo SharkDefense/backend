@@ -108,7 +108,8 @@ class VisualizeSubdomainsView(APIView):
             url = serializer.validated_data['url']
             domain = extract_domain(url)
             subdomains = self.get_subdomains(domain) 
-            return Response({'Graph_visualization': self.generate_graph(domain,subdomains)})
+            graph_image=self.generate_graph(domain,subdomains)
+            return Response({'Graph_visualization': graph_image})
         return Response(serializer.errors, status=400)
 
 
