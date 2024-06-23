@@ -26,8 +26,8 @@ class SignUp(APIView):
             }, status.HTTP_200_OK)
         user = serializer.save()
 
-        # send_welcome_email(user)
         # Send welcome email
+        # send_welcome_email(user)
 
         tokens = TokenObtainPairSerializer().get_token(user)
 
@@ -86,7 +86,6 @@ def send_welcome_email(user):
     recipient_list = [user.email]
     send_mail(subject, message, email_from, recipient_list)
 
-    # message = render_to_string('welcome_email.html', context)
 
 
 class UpdateUser(APIView):
@@ -124,3 +123,13 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
     
 
+class GetProfile(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, id):
+        user = User.objects.filter(id=id).first()
+        if not user:
+            return Response({'message': 'User not found'})
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
