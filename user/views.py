@@ -39,7 +39,8 @@ class SignUp(APIView):
                 }
             }, status.HTTP_201_CREATED
         )
-    
+
+
 class Login(APIView):
     permission_classes = []
 
@@ -87,7 +88,6 @@ def send_welcome_email(user):
     send_mail(subject, message, email_from, recipient_list)
 
 
-
 class UpdateUser(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -121,7 +121,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['email'] = self.user.email
         data['name'] = self.user.name
         return data
-    
+
 
 class GetProfile(APIView):
     permission_classes = [IsAuthenticated]
