@@ -1,7 +1,6 @@
 from urllib.parse import urlparse
 
 
-
 def extract_domain(url):
     parsed_url = urlparse(url)
     if parsed_url.netloc:

@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .serializers import URLSerializer
 from .models import MaliciousDomain,TestedURL
-from .machine_model.ml import predict
 from .utils import extract_domain
+from .predictor import predict
 import requests
 import networkx as nx
 import pyvis.network as net
